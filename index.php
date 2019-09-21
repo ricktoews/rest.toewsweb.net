@@ -6,6 +6,8 @@ require 'vendor/autoload.php';
 
 $app = new \Slim\App;
 
+require './cgi-bin/connect.php';
+
 //-----------------------------------------------------------------------------
 // CORS
 //-----------------------------------------------------------------------------
@@ -26,12 +28,19 @@ $app->get('/', function() { echo "Hello, world"; });
 $app->get('/bookshelves', 'getShelves');
 $app->get('/bookshelf/{shelf}', 'getShelf');
 $app->get('/content', 'getHomeContent');
-$app->get('/hello/{name}', function (Request $request, Response $response, array $args) {
+$app->get('/html-content', 'getHomeHtmlContent');
+$app->get('/oauth2client', 'oauth2client');
+$app->get('/hello/{name}', 'hello');
+
+function hello(Request $request, Response $response, array $args) {
     $name = $args['name'];
-    $response->getBody()->write("Hello, $name");
+
+    $response
+        ->getBody()
+        ->write("Hello, $name");
 
     return $response;
-});
+}
 $app->run();
 
 function getShelf(Request $request, Response $response, array $args) {
@@ -72,4 +81,24 @@ function getHomeContent(Request $request, Response $response) {
 	}
 	return $payload;
 
+}
+
+
+function getHomeHtmlContent(Request $request, Response $response) {
+	$content = new HomeContent();
+	$payload = [];
+	$data = $content->get();
+	if ($data) {
+		$payload = $response
+			->withStatus(200)
+			->withJson(array("data" => $data));
+	}
+	return $payload;
+
+}
+
+
+function oauth2client(Request $request, Response $response) {
+    $clientId = '273935039837-46ff17pla5ndkvnaag1ccsqa52rpkqop.apps.googleusercontent.com';
+    $clientSecret = 'brcbuOS28Rgl7ihZ8C1RiNY3';
 }

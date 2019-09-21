@@ -8,20 +8,37 @@ class HomeContent {
 		$this->_dirs = array_values(array_filter(scandir(CONTENT_DIR), function($item) { return $item !== '.' && $item !== '..'; }));
 	}
 
-	private function buildKey($file, $contents) {
+    private function getTitle($contents) {
+        $lines = explode('\n', $contents);
+        $lastNdx = sizeof($lines);
+        $ndx = 0;
+        $title = '';
+        while ($title === '' && $ndx < $lastNdx) {
+          $result = preg_match('/<div class="title">(.*?)<\/div>/', $lines[$ndx], $matches);
+          if ($result) {
+             $title = strtolower(str_replace(' ', '-', $matches[1]));
+          }
+        }
+        if ($title === '') { $title = 'no-title-found'; }
+        return $title;
+    }
+
+	private function getMetaData($file, $contents) {
 		$date = '';
 		$seq = 0;
-		preg_match('/^(\d{4}-\d{1,2}-\d{1,2})(-\d+)?\.txt$/', $file, $matches);
+		preg_match('/^(\d{4}-\d{1,2}-\d{1,2})(-\d+)?\.html$/', $file, $matches);
 		if ($matches) {
 			$seq = isset($matches[2]) ? substr($matches[2], 1) : '0';
 			$date = $matches[1];
 		}
-		return array('date' => $date, 'seq' => $seq);
+
+        $title = $this->getTitle($contents);
+		return array('title' => $title, 'date' => $date, 'seq' => $seq);
 	}
 
 	private function getFiles($dir) {
 		$files = array_filter(scandir($dir), function($item) { 
-			$keep = (preg_match('/^(\d{4}-\d{1,2}-\d{1,2})(-\d+)?\.txt$/', $item));
+			$keep = (preg_match('/^(\d{4}-\d{1,2}-\d{1,2})(-\d+)?\.html$/', $item));
 			return $keep;
 
 		});
@@ -35,8 +52,8 @@ class HomeContent {
 		foreach($files as $file) {
 			$path = $content_dir . '/' . $file;
 			$contents = file_get_contents($path);
-			$key = $this->buildKey($file, $contents);
-			$content[] = array('date' => $key['date'], 'seq' => $key['seq'], 'topic' => $dir, 'content' => $contents);
+			$metaData = $this->getMetaData($file, $contents);
+			$content[] = array('title' => $metaData['title'], 'date' => $metaData['date'], 'seq' => $metaData['seq'], 'topic' => $dir, 'content' => $contents);
 		}
 		return array_values($content);
 	}
