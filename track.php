@@ -21,10 +21,10 @@ $app->run();
 function track(Request $request, Response $response, array $args) {
   $req_data = json_decode($request->getBody());
   $user_id = $req_data->user_id;
-  $tracking_data = $req_data->data;
+  $tracking_data = $req_data->tracking_data;
   $api = new Track();
   $result = $api->set($user_id, $tracking_data);
-  $data = array('result' => $result);
+  $data = array('status' => 200, 'data' => $result);
 
   $payload = $response
     ->withStatus(200)
@@ -36,6 +36,7 @@ function track(Request $request, Response $response, array $args) {
 function getTrack(Request $request, Response $response, array $args) {
   $api = new Track();
   $req_data = json_decode($request->getBody());
+error_log('getTrack ' . json_encode($req_data));
   $user_id = $req_data->user_id;
   $tracking_data = $api->getTrack($user_id);
   $output = array('status' => 200, 'data' => $tracking_data);

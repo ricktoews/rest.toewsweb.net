@@ -57,19 +57,21 @@ class Track {
   }
 
   private function addTrackingRecord($user_id, $tracking_data) {
+    $tracking_data = json_encode($tracking_data);
     $params = array(':user_id' => $user_id, ':tracking_data' => $tracking_data);
     $sql = "INSERT INTO tracking (user_id, tracking_data) VALUES (:user_id, :tracking_data)";
     $insert_stmt = $this->_dbh->prepare($sql);
     $result = $insert_stmt->execute($params);
-    return $result;
+    return $result ? array('tracking_data' => $tracking_data) : $result;
   }
 
   private function updateTrackingRecord($user_id, $tracking_data) {
-    $params = array(':user_id' => $user_id, ':data' => $tracking_data);
+    $tracking_data = json_encode($tracking_data);
+    $params = array(':user_id' => $user_id, ':tracking_data' => $tracking_data);
     $sql = "UPDATE tracking SET tracking_data=:tracking_data WHERE user_id=:user_id";
     $update_stmt = $this->_dbh->prepare($sql);
     $result = $update_stmt->execute($params);
-    return $result;
+    return $result ? array('tracking_data' => $tracking_data) : $result;
   }
 
 }
